@@ -1,0 +1,85 @@
+---
+const { price, prevPrice, prodName, prodId, vendorName, imageUrl } =
+  Astro.props;
+const item = {
+  price,
+  prevPrice,
+  prodName,
+  vendorName,
+  imageUrl,
+  prodId,
+};
+---
+
+<a href={`/product/${item.prodId}`} class="prod-card">
+  <div class="price-band bg-blue">
+    <div class="price">
+      <div class="current-price">{price + "$"}</div>
+      {prevPrice ? <div class="prev-price">{prevPrice + "$"}</div> : ""}
+    </div>
+
+    {
+      prevPrice ? (
+        <div class="sale bg-green">
+          {Math.ceil(
+            ((Number(prevPrice) - Number(price)) / Number(prevPrice)) * 100
+          ) + "% OFF"}
+        </div>
+      ) : (
+        ""
+      )
+    }
+  </div>
+  <div class="fav-btn-box">
+    <button data-item={JSON.stringify(item)} class={`fav-btn fav-btn-${prodId}`}
+      ><i class="bi bi-heart"></i></button
+    >
+  </div>
+  <div class="prod-img-wrapper">
+    <img class="prod-img" src={imageUrl} alt="" srcset="" />
+  </div>
+  <div class="prod-name-wrapper">
+    <span class="vendor-name text-blue">{vendorName}</span>
+    <span class="prod-name">{prodName}</span>
+  </div>
+  <div class="prod-rating text-blue">
+    <i class="bi bi-star-fill"></i>
+    <i class="bi bi-star-fill"></i>
+    <i class="bi bi-star-fill"></i>
+    <i class="bi bi-star-half"></i>
+    <i class="bi bi-star"></i>
+  </div>
+  <div class="basket-btn-wrapper">
+    <button
+      data-item={JSON.stringify(item)}
+      class=`basket-btn bg-green basket-btn-${prodId}`
+    >
+      <i class="bi bi-basket2-fill"></i> Add To Basket
+    </button>
+  </div>
+</a>
+<script is:inline define:vars={{ item }}>
+  // basket
+  const basketButton = document.querySelector(`.basket-btn-${item.prodId}`);
+  basketButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    let basketItems = JSON.parse(localStorage.getItem("basketItems"));
+    if (!basketItems) basketItems = [];
+    const existingIndex = basketItems.findIndex(
+      (itm) => itm.prodId === item.prodId
+    );
+    if (existingIndex !== -1) {
+      basketItems[existingIndex].count++;
+    } else {
+      basketItems.push({ ...item, count: 1 });
+    }
+    localStorage.setItem("basketItems", JSON.stringify(basketItems));
+    new Toast({
+      message: "Added to Basket",
+      type: "success",
+    });
+    updateNavBasket();
+  });
+</script>
